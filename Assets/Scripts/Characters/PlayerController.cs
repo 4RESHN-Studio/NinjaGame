@@ -6,9 +6,6 @@ namespace Assets.Materials.Resources.Scripts.Characters
     {
         private void Update()
         {
-            print($"{Position.x};{Position.y}");
-            print(Physics2D.OverlapCircleAll(Position, _groundCheckRadius).Length);
-
             var horizontalMove = Input.GetAxisRaw(Constants.Axes[(int)Axis2D.X]);
             var verticalMove = Input.GetAxisRaw(Constants.Axes[(int)Axis2D.Y]);
 
@@ -18,7 +15,7 @@ namespace Assets.Materials.Resources.Scripts.Characters
                 Flip(horizontalMove < 0);
 
             if(verticalMove != 0 && IsGrounded)
-                Jump(verticalMove);
+                Jump();
         }
 
         protected override void Flip(bool direction)
@@ -31,9 +28,10 @@ namespace Assets.Materials.Resources.Scripts.Characters
             _rigidbody.velocity = new Vector2(horizontalMove * _speed, _rigidbody.velocity.y);
         }
 
-        protected override void Jump(float verticalMove)
+        protected override void Jump()
         {
-            _rigidbody.AddForce(transform.up * _jumpForce * verticalMove, ForceMode2D.Impulse);
+            print(((Vector2)transform.up * _jumpForce).y);
+            _rigidbody.AddForce((Vector2)transform.up * _jumpForce, ForceMode2D.Impulse);
         }
     }
 }
