@@ -4,17 +4,31 @@ namespace Assets.Materials.Resources.Scripts.Characters
 {
     public class PlayerController : BaseController
     {
+        private bool _secondJumpActive = true;
+        private new void Awake()
+        {
+            base.Awake();
+
+            _speed = 6.5f;
+            _maxHealth = 50;
+            _jumpForce = 10.5f;
+        }
+
         private void Update()
         {
-            var horizontalMove = Input.GetAxisRaw(Constants.Axes[(int)Axis2D.X]);
-            var verticalMove = Input.GetAxisRaw(Constants.Axes[(int)Axis2D.Y]);
+            if (IsGrounded)
+                _secondJumpActive = true;
 
-            Move(horizontalMove);
-            
-            if (horizontalMove != 0)
-                Flip(horizontalMove < 0);
+            var horizontalMove = Input.GetAxis(Constants.Axes[(int)Axis2D.X]);
+            var verticalMove = Input.GetKeyDown(KeyCode.Space);
 
-            if(verticalMove != 0 && IsGrounded)
+            if (horizontalMove != 0 || _rigidbody.velocity.x != 0)
+            {
+                Move(horizontalMove);
+                Flip(horizontalMove == 0 ? _spriteRenderer.flipX : horizontalMove < 0);
+            }
+                
+            if(verticalMove && (IsGrounded || _secondJumpActive))
                 Jump();
         }
 
@@ -30,8 +44,14 @@ namespace Assets.Materials.Resources.Scripts.Characters
 
         protected override void Jump()
         {
-            print(((Vector2)transform.up * _jumpForce).y);
-            _rigidbody.AddForce((Vector2)transform.up * _jumpForce, ForceMode2D.Impulse);
+            if (!IsGrounded)
+            {
+                _secondJumpActive = false;
+                _rigidbody.velocity = new Vector2(_rigidbody.velocity.x, 0);
+            }
+                
+
+            _rigidbody.AddForce(transform.up * _jumpForce, ForceMode2D.Impulse);
         }
     }
 }

@@ -2,22 +2,24 @@ using UnityEngine;
 
 public abstract class BaseController : MonoBehaviour
 {
-    [SerializeField] protected float _speed = 5f;
-    [SerializeField] protected int _maxHealth = 50;
-    [SerializeField] protected float _jumpForce = 0.75f;
-    protected float _groundCheckRadius = 0.85f;
+    [SerializeField] protected float _speed;
+    [SerializeField] protected int _maxHealth;
+    [SerializeField] protected float _jumpForce;
+    private readonly float _isGroundedRadius = 0.1f;
 
     protected Rigidbody2D _rigidbody;
     protected SpriteRenderer _spriteRenderer;
 
-    protected bool IsGrounded { get; private set; } 
-    protected Vector2 Position => transform.position;
-
-
-    private void FixedUpdate()
+    protected bool IsGrounded
     {
-        IsGrounded = Physics2D.OverlapCircleAll(Position, _groundCheckRadius).Length > 1;
+        get
+        {
+            var position = new Vector2(_spriteRenderer.gameObject.transform.position.x, _spriteRenderer.gameObject.transform.position.y);
+            return Physics2D.OverlapCircleAll(position, _isGroundedRadius).Length > 1;
+        }
     }
+
+    protected Vector2 Position => transform.position;
 
     protected void Awake()
     {
