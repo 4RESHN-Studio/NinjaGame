@@ -4,7 +4,7 @@ public abstract class BaseController : MonoBehaviour
 {
     [SerializeField] protected float _speed;
     [SerializeField] protected int _maxHealth;
-    [SerializeField] protected float _jumpForce;
+    [SerializeField] protected float _jumpSpeed;
     private readonly float _isGroundedRadius = 0.1f;
 
     protected Rigidbody2D _rigidbody;
@@ -27,12 +27,21 @@ public abstract class BaseController : MonoBehaviour
         _spriteRenderer = GetComponentInChildren<SpriteRenderer>(true);
     }
 
-    protected abstract void Move(float horizontalMove);
+    protected virtual void Move(float horizontalMove)
+    {
+        _rigidbody.velocity = new Vector2(horizontalMove * _speed, _rigidbody.velocity.y);
+    }
 
     /// <summary>
     /// 
     /// </summary>
     /// <param name="direction"><see langword="true"/> - Right. <see langword="false"/> - Left</param>
-    protected abstract void Flip(bool direction);
-    protected abstract void Jump();
+    protected virtual void Flip(bool direction)
+    {
+        _spriteRenderer.flipX = direction;
+    }
+    protected virtual void Jump()
+    {
+        _rigidbody.velocity = new Vector2(_rigidbody.velocity.x, _jumpSpeed);
+    }
 }

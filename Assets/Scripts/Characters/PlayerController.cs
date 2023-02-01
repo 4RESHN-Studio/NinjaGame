@@ -1,57 +1,95 @@
-﻿using UnityEngine;
+﻿using System;
+
+using UnityEngine;
 
 namespace Assets.Materials.Resources.Scripts.Characters
 {
     public class PlayerController : BaseController
     {
-        private bool _secondJumpActive = true;
+        [SerializeField] private bool _secondJumpAvailable = false;
+        [SerializeField] private float _hangTime = 0.6f; //seconds
+        [SerializeField] private float _jumpBufferLength = 0.5f; //seconds
+
+        private bool _secondJumpActive;
+        private float _hangTimer;
+        private float _jumpBufferCounter;
+
         private new void Awake()
         {
             base.Awake();
 
             _speed = 6.5f;
             _maxHealth = 50;
-            _jumpForce = 10.5f;
+            _jumpSpeed = 10.5f;
+
+            _secondJumpActive = _secondJumpAvailable;
+            _hangTimer = _hangTime;
+            _jumpBufferCounter = _jumpBufferLength;
         }
 
         private void Update()
         {
-            if (IsGrounded)
-                _secondJumpActive = true;
+            CheckGround();
 
             var horizontalMove = Input.GetAxis(Constants.Axes[(int)Axis2D.X]);
-            var verticalMove = Input.GetKeyDown(KeyCode.Space);
 
             if (horizontalMove != 0 || _rigidbody.velocity.x != 0)
             {
                 Move(horizontalMove);
                 Flip(horizontalMove == 0 ? _spriteRenderer.flipX : horizontalMove < 0);
             }
-                
-            if(verticalMove && (IsGrounded || _secondJumpActive))
+
+            CheckJumpBuffer();
+
+            if ((_jumpBufferCounter >= 0.0f && _hangTimer > 0.0f) || (Input.GetKeyDown(KeyCode.Space) && _secondJumpActive))
+            {                
                 Jump();
+            }
+
+            if (Input.GetKeyUp(KeyCode.Space) && _rigidbody.velocity.y > 0)
+                StopJump();
         }
 
-        protected override void Flip(bool direction)
+        private void CheckJumpBuffer()
         {
-            _spriteRenderer.flipX = direction;
+            if (Input.GetKeyDown(KeyCode.Space))
+            {
+                _jumpBufferCounter = _jumpBufferLength;
+                return;
+            }
+
+            _jumpBufferCounter -= Time.deltaTime;
         }
 
-        protected override void Move(float horizontalMove)
+        private void CheckGround()
         {
-            _rigidbody.velocity = new Vector2(horizontalMove * _speed, _rigidbody.velocity.y);
+            if (IsGrounded)
+            {
+                _secondJumpActive = _secondJumpAvailable;
+                _hangTimer = _hangTime;
+
+                return;
+            }
+
+            _hangTimer -= Time.deltaTime;
         }
 
         protected override void Jump()
         {
-            if (!IsGrounded)
+            if (!IsGrounded || _hangTimer <= 0)
             {
                 _secondJumpActive = false;
                 _rigidbody.velocity = new Vector2(_rigidbody.velocity.x, 0);
             }
-                
 
-            _rigidbody.AddForce(transform.up * _jumpForce, ForceMode2D.Impulse);
+            _jumpBufferCounter = 0;
+            base.Jump();
         }
+
+        private void StopJump()
+        {
+            _rigidbody.velocity = new Vector2(_rigidbody.velocity.x, _rigidbody.velocity.y * 0.5f);
+        }
+
     }
 }
