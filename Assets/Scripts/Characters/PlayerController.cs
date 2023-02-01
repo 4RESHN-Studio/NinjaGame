@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using Assets.Scripts.Characters.Enums;
+using UnityEngine;
 
 namespace Assets.Materials.Resources.Scripts.Characters
 {
@@ -6,13 +7,19 @@ namespace Assets.Materials.Resources.Scripts.Characters
     {
         private void Update()
         {
+            if (IsGrounded) State = AnimationsState.Idle;
+            else State = AnimationsState.Jump;
             var horizontalMove = Input.GetAxisRaw(Constants.Axes[(int)Axis2D.X]);
             var verticalMove = Input.GetAxisRaw(Constants.Axes[(int)Axis2D.Y]);
 
-            Move(horizontalMove);
+           
             
-            if (horizontalMove != 0)
+            if (horizontalMove != 0 || _rigidbody.velocity.x != 0)
+            {
+                Move(horizontalMove); 
                 Flip(horizontalMove < 0);
+            }
+                
 
             if(verticalMove != 0 && IsGrounded)
                 Jump();
@@ -25,6 +32,7 @@ namespace Assets.Materials.Resources.Scripts.Characters
 
         protected override void Move(float horizontalMove)
         {
+            base.Move(horizontalMove);
             _rigidbody.velocity = new Vector2(horizontalMove * _speed, _rigidbody.velocity.y);
         }
 

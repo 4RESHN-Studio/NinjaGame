@@ -1,3 +1,5 @@
+using Assets.Materials.Resources.Scripts;
+using Assets.Scripts.Characters.Enums;
 using UnityEngine;
 
 public abstract class BaseController : MonoBehaviour
@@ -8,10 +10,16 @@ public abstract class BaseController : MonoBehaviour
     protected float _groundCheckRadius = 0.85f;
 
     protected Rigidbody2D _rigidbody;
+    protected Animator _animator;
     protected SpriteRenderer _spriteRenderer;
 
     protected bool IsGrounded { get; private set; } 
     protected Vector2 Position => transform.position;
+    protected AnimationsState State
+    {
+        get => (AnimationsState)_animator.GetInteger(Constants.AnimationState);
+        set => _animator.SetInteger(Constants.AnimationState, (int)value);
+    }
 
 
     private void FixedUpdate()
@@ -19,13 +27,23 @@ public abstract class BaseController : MonoBehaviour
         IsGrounded = Physics2D.OverlapCircleAll(Position, _groundCheckRadius).Length > 1;
     }
 
+    //private void Update()
+    //{
+    //    if (IsGrounded) State = AnimationsState.Idle;
+    //    else State = AnimationsState.Jump;
+    //}
+
     protected void Awake()
     {
         _rigidbody = GetComponent<Rigidbody2D>();
+        _animator = GetComponent<Animator>();
         _spriteRenderer = GetComponentInChildren<SpriteRenderer>(true);
     }
-
-    protected abstract void Move(float horizontalMove);
+    
+    protected virtual void Move(float horizontalMove)
+    {
+        if (IsGrounded) State = AnimationsState.Move;
+    }
 
     /// <summary>
     /// 

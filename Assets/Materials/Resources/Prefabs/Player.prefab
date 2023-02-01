@@ -87,7 +87,6 @@ MonoBehaviour:
   _speed: 5
   _maxHealth: 50
   _jumpForce: 0.75
-  _groundCheckRadius: 1.6
 --- !u!1 &6218098078167710376
 GameObject:
   m_ObjectHideFlags: 0
