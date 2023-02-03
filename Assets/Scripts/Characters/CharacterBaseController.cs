@@ -1,28 +1,29 @@
+using Assets.Materials.Resources.Scripts;
+
+using System.Collections.Generic;
+
 using UnityEngine;
 
 public abstract class BaseController : MonoBehaviour
 {
+    [SerializeField] private Collider2D _groundCollider;
+
     [SerializeField] protected float _speed;
     [SerializeField] protected int _maxHealth;
     [SerializeField] protected float _jumpSpeed;
-    private readonly float _isGroundedRadius = 0.1f;
 
     protected Rigidbody2D _rigidbody;
     protected SpriteRenderer _spriteRenderer;
 
-    protected bool IsGrounded
-    {
-        get
-        {
-            var position = new Vector2(_spriteRenderer.gameObject.transform.position.x, _spriteRenderer.gameObject.transform.position.y);
-            return Physics2D.OverlapCircleAll(position, _isGroundedRadius).Length > 1;
-        }
-    }
-
+    protected bool IsGrounded => _groundCollider.OverlapCollider(new ContactFilter2D(), new List<Collider2D>()) > 1;
     protected Vector2 Position => transform.position;
+    protected Direction Direction => _spriteRenderer.flipX ? Direction.Left : Direction.Right;
 
     protected void Awake()
     {
+        if (_groundCollider == null)
+            throw new MissingReferenceException();
+
         _rigidbody = GetComponent<Rigidbody2D>();
         _spriteRenderer = GetComponentInChildren<SpriteRenderer>(true);
     }
@@ -36,9 +37,10 @@ public abstract class BaseController : MonoBehaviour
     /// 
     /// </summary>
     /// <param name="direction"><see langword="true"/> - Right. <see langword="false"/> - Left</param>
-    protected virtual void Flip(bool direction)
+    protected virtual void Flip(Direction direction)
     {
-        _spriteRenderer.flipX = direction;
+        if(direction != Direction.None)
+            _spriteRenderer.flipX = direction == Direction.Left;
     }
     protected virtual void Jump()
     {
